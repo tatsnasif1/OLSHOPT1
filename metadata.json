@@ -1,0 +1,8 @@
+{
+  "name": "Terranova Store",
+  "description": "Terranova Store - Katalog online premium apps dan top up game. Order mudah lewat WhatsApp.",
+  "permissions": [],
+  "capabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
