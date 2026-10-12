@@ -338,12 +338,12 @@ function buildWhatsAppLink(message) {
 
 /** Pesan order untuk keseluruhan produk (tanpa paket spesifik) */
 function buildProductOrderMessage(productName) {
-  return `Halo Terranova Store, saya ingin order ${productName}.`;
+  return `Halo Admin Terranova Store! Mau order *${productName}* nih kak, ready kah?`;
 }
 
 /** Pesan order untuk produk + paket tertentu */
 function buildPackageOrderMessage(productName, packageLabel) {
-  return `Halo Terranova Store, saya ingin order ${productName} paket ${packageLabel}.`;
+  return `Halo Admin Terranova Store! Mau order *${productName}* paket *${packageLabel}* nih kak, siap proses!`;
 }
 
 
@@ -1447,16 +1447,22 @@ function updateOrderModalWhatsAppLink() {
   const notesInput = document.getElementById("orderModalNotes");
   const notes = notesInput ? notesInput.value.trim() : "";
 
-  let msg = `Halo Terranova Store, saya ingin order:\n`;
-  msg += `📦 Produk: ${activeOrderProduct.name}\n`;
+  let msg = `Halo Admin Terranova Store! Mau order nih kak:\n\n`;
+  msg += `*Detail Pesanan:*\n`;
+  msg += `- Produk: *${activeOrderProduct.name}*\n`;
   if (currentPkg) {
-    msg += `⏳ Paket: ${currentPkg.label} (${currentPkg.price})\n`;
+    msg += `- Paket: *${currentPkg.label}* (${currentPkg.price})\n`;
   }
-  msg += `💳 Metode Pembayaran: ${activePaymentMethod}\n`;
+  msg += `- Pembayaran: *${activePaymentMethod}*\n`;
   if (notes.length > 0) {
-    msg += `📝 Catatan: ${notes}\n`;
+    msg += `- Catatan: ${notes}\n`;
   }
-  msg += `\nMohon barcode QRIS untuk pembayaran ya kak. Terima kasih!`;
+
+  if (activePaymentMethod.toUpperCase().includes("QRIS")) {
+    msg += `\nBoleh minta barcode QRIS-nya ya kak? Siap langsung transfer sekarang. Ditunggu konfirmasinya, makasih banyak!`;
+  } else {
+    msg += `\nBoleh info detail pembayarannya kak? Siap langsung transfer sekarang. Ditunggu konfirmasinya, makasih banyak!`;
+  }
 
   submitBtn.href = buildWhatsAppLink(msg);
 }
