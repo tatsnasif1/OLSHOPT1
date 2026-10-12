@@ -78,6 +78,12 @@ app.get('/health', (_req, res) => {
 
 // GET /api/products - Dapatkan seluruh produk aktif (atau semua jika query all=true)
 app.get('/api/products', (req, res) => {
+  res.set({
+    'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+    'Pragma': 'no-cache',
+    'Expires': '0',
+    'Surrogate-Control': 'no-store'
+  });
   try {
     const all = req.query.all === 'true';
     const products = getProducts();

@@ -4134,3 +4134,100 @@ html.intro-skip-init .intro {
     margin-right: auto;
   }
 }
+
+/* ==========================================================================
+   OPTIMASI PERFORMA MOBILE KHUSUS (FPS TINGGI & SCROLL MULUS DI HP)
+   ========================================================================== */
+@media (max-width: 768px) {
+  /* 1. Hilangkan beban komputasi GPU blur (backdrop-filter) yang berat di HP */
+  :root {
+    --glass-blur: 0px;
+  }
+
+  .navbar,
+  .product-card,
+  .quick-card,
+  .category-card,
+  .pricelist-card,
+  .filter-pill,
+  .tab-btn,
+  .modal-box,
+  .sidebar,
+  .search-input,
+  .footer {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  /* 2. Warna solid gelap premium menggantikan blur kaca */
+  .navbar {
+    background: #080c1a !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  }
+
+  .product-card {
+    background: #0f172a !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4) !important;
+    content-visibility: auto;
+    contain-intrinsic-size: 320px;
+    transform: translateZ(0);
+  }
+
+  .quick-card {
+    background: #0c1427 !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  }
+
+  .category-card {
+    background: #0e1629 !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  }
+
+  .pricelist-card {
+    background: #0e1629 !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    content-visibility: auto;
+    contain-intrinsic-size: 260px;
+  }
+
+  .modal-box {
+    background: #0c1222 !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  }
+
+  .sidebar {
+    background: #080c1a !important;
+  }
+
+  /* 3. Nonaktifkan animasi latar belakang yang memicu repainting terus-menerus */
+  .galaxy-bg .star-layer {
+    animation: none !important;
+  }
+
+  .galaxy-bg .galaxy-nebula {
+    animation: none !important;
+    filter: blur(35px) !important;
+    opacity: 0.3 !important;
+  }
+
+  .galaxy-bg .meteor {
+    display: none !important;
+  }
+
+  /* 4. Kurangi beban shadow/glow berlapis */
+  .product-badge {
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4) !important;
+  }
+
+  .btn-order {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+  }
+
+  /* 5. Smooth scroll momentum untuk mobile */
+  html, body {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: none;
+  }
+}
+

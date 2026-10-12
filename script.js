@@ -1003,20 +1003,32 @@ function createGalaxyBackground() {
   const prefersReducedMotion = window.matchMedia(
     "(prefers-reduced-motion: reduce)"
   ).matches;
-  const isSmallScreen = window.innerWidth < 640;
-  // hardwareConcurrency = perkiraan jumlah core CPU. Tidak 100% akurat di
-  // semua browser, tapi cukup sebagai sinyal kasar "perangkat terbatas".
+  const isMobile = window.innerWidth <= 768;
   const isLowPowerDevice =
     typeof navigator.hardwareConcurrency === "number" &&
     navigator.hardwareConcurrency <= 4;
-  const reduceParticles = isSmallScreen || isLowPowerDevice;
+  const reduceParticles = isMobile || isLowPowerDevice || prefersReducedMotion;
+
+  const bg = document.createElement("div");
+  bg.className = "galaxy-bg";
+  bg.setAttribute("aria-hidden", "true");
+
+  if (isMobile) {
+    // Pada mobile: gunakan background kosmik statis & ultra-ringan tanpa animasi box-shadow berat
+    bg.innerHTML = `
+      <div class="galaxy-nebula n1" style="animation:none; filter:blur(40px); opacity:0.35;"></div>
+      <div class="galaxy-nebula n2" style="animation:none; filter:blur(40px); opacity:0.25;"></div>
+    `;
+    document.body.prepend(bg);
+    return;
+  }
 
   const spreadX = Math.max(window.innerWidth, 1200);
-  const tileSmall = 2000; // tinggi "ubin" pola bintang lapisan kecil (px)
-  const tileMedium = 1400; // tinggi ubin lapisan bintang yang lebih besar/terang
+  const tileSmall = 2000;
+  const tileMedium = 1400;
 
-  const smallCount = reduceParticles ? 70 : 130;
-  const mediumCount = reduceParticles ? 30 : 55;
+  const smallCount = reduceParticles ? 40 : 120;
+  const mediumCount = reduceParticles ? 20 : 50;
 
   const smallStars = generateStarShadow(
     smallCount,
@@ -1031,9 +1043,6 @@ function createGalaxyBackground() {
     () => `rgba(255,255,255,${(0.6 + Math.random() * 0.4).toFixed(2)}) 0 0 1px`
   );
 
-  const bg = document.createElement("div");
-  bg.className = "galaxy-bg";
-  bg.setAttribute("aria-hidden", "true");
   bg.innerHTML = `
     <div class="galaxy-nebula n1"></div>
     <div class="galaxy-nebula n2"></div>
@@ -1105,8 +1114,9 @@ function initIntro() {
   document.body.style.overflow = "hidden";
 
   // Background galaxy & kosmik luar angkasa khusus intro
+  const isMobileScreen = window.innerWidth <= 768;
   const introBg = document.getElementById("introBg");
-  if (introBg) {
+  if (introBg && !isMobileScreen) {
     const introStars = generateStarShadow(
       90,
       window.innerWidth,
@@ -1121,7 +1131,7 @@ function initIntro() {
   }
 
   const introCosmos = document.getElementById("introCosmos");
-  if (introCosmos) {
+  if (introCosmos && !isMobileScreen) {
     const cosmosStars = generateStarShadow(
       70,
       window.innerWidth,
@@ -1603,12 +1613,31 @@ function initOptimizedVideoLoops() {
     v.addEventListener("error", applyPosterFallback);
   });
 
-  // JIKA KEDUA VIDEO ADA (homepage index.html):
-  // Pasang Canvas Mirroring dari heroVideo ke brand logo di navbar.
-  // Ini memberi garansi matematis 100% SINKRONISASI FRAME-BY-FRAME:
-  // Setiap milidetik heroVideo merender frame, canvas navbar menggambar frame yang SAMA PERSIS.
-  // Nol drift, nol desinkronisasi, dan hanya menggunakan 1 decoder hardware sehingga bebas lag!
-  if (heroVideo && brandVideo) {
+  const isMobile = window.innerWidth <= 768;
+
+  // IntersectionObserver untuk pause video saat di luar layar (hemat CPU/GPU & baterai secara drastis saat scrolling)
+  if ("IntersectionObserver" in window) {
+    const videoScrollObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const vid = entry.target;
+          if (entry.isIntersecting) {
+            vid.play().catch(() => {});
+          } else {
+            vid.pause();
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+
+    if (heroVideo) videoScrollObserver.observe(heroVideo);
+    if (introVideo) videoScrollObserver.observe(introVideo);
+  }
+
+  // JIKA KEDUA VIDEO ADA (homepage index.html di layar Desktop):
+  // Pasang Canvas Mirroring HANYA pada desktop (window.innerWidth > 768)
+  if (!isMobile && heroVideo && brandVideo) {
     const brandWrap = brandVideo.parentElement;
     let canvas = brandWrap ? brandWrap.querySelector("canvas.brand-logo-media") : null;
 
@@ -1619,18 +1648,24 @@ function initOptimizedVideoLoops() {
       canvas.height = 96;
       canvas.setAttribute("aria-hidden", "true");
 
-      // Sembunyikan brandVideo secara visual, posisikan canvas di depannya
       brandVideo.style.display = "none";
       brandWrap.appendChild(canvas);
     }
 
     if (canvas) {
       const ctx = canvas.getContext("2d", { alpha: false });
+      let isLoopRunning = false;
 
       function renderCanvasFrame() {
-        if (heroVideo && heroVideo.readyState >= 2) {
+        if (!heroVideo || heroVideo.paused || heroVideo.ended) {
+          isLoopRunning = false;
+          return;
+        }
+
+        if (heroVideo.readyState >= 2) {
           ctx.drawImage(heroVideo, 0, 0, canvas.width, canvas.height);
         }
+
         if ("requestVideoFrameCallback" in heroVideo) {
           heroVideo.requestVideoFrameCallback(renderCanvasFrame);
         } else {
@@ -1638,51 +1673,27 @@ function initOptimizedVideoLoops() {
         }
       }
 
-      // Mulai proses render saat video mulai berputar
-      heroVideo.addEventListener("play", () => {
-        if ("requestVideoFrameCallback" in heroVideo) {
-          heroVideo.requestVideoFrameCallback(renderCanvasFrame);
-        } else {
-          requestAnimationFrame(renderCanvasFrame);
+      function startCanvasLoop() {
+        if (!isLoopRunning) {
+          isLoopRunning = true;
+          renderCanvasFrame();
         }
-      });
+      }
 
-      // Render pertama saat frame sudah terbaca
+      heroVideo.addEventListener("play", startCanvasLoop);
       heroVideo.addEventListener("loadeddata", () => {
-        ctx.drawImage(heroVideo, 0, 0, canvas.width, canvas.height);
+        if (heroVideo.readyState >= 2) ctx.drawImage(heroVideo, 0, 0, canvas.width, canvas.height);
       });
       heroVideo.addEventListener("canplay", () => {
-        ctx.drawImage(heroVideo, 0, 0, canvas.width, canvas.height);
+        if (heroVideo.readyState >= 2) ctx.drawImage(heroVideo, 0, 0, canvas.width, canvas.height);
       });
     }
 
-    // Dual-clock backup lock (jika canvas tidak aktif):
-    // Kunci currentTime brandVideo agar selalu sama persis dengan heroVideo
-    const lockTime = () => {
-      if (Math.abs(brandVideo.currentTime - heroVideo.currentTime) > 0.05) {
-        brandVideo.currentTime = heroVideo.currentTime;
-      }
-      if (!heroVideo.paused && brandVideo.paused) {
-        brandVideo.play().catch(() => {});
-      }
-    };
-
-    heroVideo.addEventListener("timeupdate", lockTime);
-    heroVideo.addEventListener("seeked", lockTime);
-
-    // Saat looping, kembali ke detik 0 secara serentak
-    heroVideo.addEventListener("ended", () => {
-      heroVideo.currentTime = 0;
-      brandVideo.currentTime = 0;
-      heroVideo.play().catch(() => {});
-      brandVideo.play().catch(() => {});
-    });
-
-    // Mulai putar kedua video secara serentak
     Promise.all([heroVideo.play(), brandVideo.play()]).catch(() => {});
-  } else if (brandVideo) {
-    // Pada sub-halaman (streaming, editing, dll) di mana hanya ada 1 video (navbar saja)
-    brandVideo.play().catch(() => {});
+  } else {
+    // Pada mobile atau sub-halaman: putar langsung tanpa canvas mirroring overhead
+    if (heroVideo) heroVideo.play().catch(() => {});
+    if (brandVideo) brandVideo.play().catch(() => {});
   }
 
   // Handle visibility change tab browser: saat tab aktif kembali, sinkronkan instan
@@ -1692,15 +1703,8 @@ function initOptimizedVideoLoops() {
         if (!v.paused) v.pause();
       });
     } else {
-      if (heroVideo) {
-        heroVideo.play().catch(() => {});
-        if (brandVideo) {
-          brandVideo.currentTime = heroVideo.currentTime;
-          brandVideo.play().catch(() => {});
-        }
-      } else if (brandVideo) {
-        brandVideo.play().catch(() => {});
-      }
+      if (heroVideo) heroVideo.play().catch(() => {});
+      if (brandVideo) brandVideo.play().catch(() => {});
     }
   });
 }
@@ -1714,7 +1718,7 @@ function initOptimizedVideoLoops() {
  */
 async function syncLiveProducts() {
   try {
-    const res = await fetch("/api/products");
+    const res = await fetch("/api/products?t=" + Date.now(), { cache: "no-store" });
     if (!res.ok) return;
     const data = await res.json();
     if (data.success && Array.isArray(data.products) && data.products.length > 0) {
