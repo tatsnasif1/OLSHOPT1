@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0288f7"/>
+      <stop offset="100%" stop-color="#006be5"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#003580" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+
+  <!-- Background Base -->
+  <rect width="512" height="512" rx="115" fill="url(#bgGrad)"/>
+
+  <!-- Subtle glow -->
+  <circle cx="256" cy="180" r="220" fill="#38bdf8" opacity="0.15"/>
+
+  <!-- White Speech Bubble with Phone Tail -->
+  <g filter="url(#shadow)">
+    <!-- Main circular bubble with speech tail -->
+    <path d="M 256 100 
+             C 344.36 100, 416 171.63, 416 260 
+             C 416 348.37, 344.36 420, 256 420 
+             C 224.2 420, 194.5 410.7, 169.5 394.7 
+             L 112 416 
+             L 128.8 359.8 
+             C 108.2 332.6, 96 297.8, 96 260 
+             C 96 171.63, 167.63 100, 256 100 Z" 
+          fill="#ffffff"/>
+  </g>
+
+  <!-- Blue Phone Handset inside bubble (Official GetContact Signature) -->
+  <g transform="translate(256, 256) scale(1.15) translate(-256, -256)">
+    <!-- Phone Receiver Path -->
+    <path d="M 212 182 
+             C 204 182, 196 186, 191 193 
+             L 173 218 
+             C 168 225, 166 235, 170 244 
+             C 183 275, 203 306, 230 333 
+             C 257 360, 288 380, 319 393 
+             C 328 397, 338 395, 345 390 
+             L 370 372 
+             C 377 367, 381 359, 381 351 
+             C 381 343, 376 335, 369 330 
+             L 332 304 
+             C 325 299, 316 298, 308 302 
+             L 294 311 
+             C 289 314, 282 313, 277 309 
+             C 260 295, 245 280, 233 263 
+             C 229 258, 228 251, 231 246 
+             L 240 232 
+             C 244 224, 243 215, 238 208 
+             L 212 182 Z" 
+          fill="#0072ea"/>
+  </g>
+
+  <!-- Green Verification / Caller Badge Dot (Distinctive GetContact detail) -->
+  <circle cx="360" cy="155" r="28" fill="#10b981"/>
+  <path d="M 350 155 L 357 162 L 372 147" fill="none" stroke="#ffffff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

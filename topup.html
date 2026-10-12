@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
@@ -42,18 +42,23 @@
     <div class="navbar-inner">
       <a href="index.html" class="brand">
         <span class="brand-logo-wrap">
-          <span class="brand-logo-fallback">TN</span>
           <video
             class="brand-logo-media"
-            src="assets/images/logo-kucing.mp4"
             autoplay
             muted
             loop
             playsinline
+            webkit-playsinline
+            x5-playsinline
             preload="auto"
+            disablepictureinpicture
+            disableremoteplayback
+            poster="assets/images/logo-kucing-poster.webp"
             aria-hidden="true"
-            onerror="this.style.display='none';"
-          ></video>
+          >
+            <source src="assets/images/logo-kucing.mp4" type="video/mp4" />
+            <img src="assets/images/logo-kucing-poster.webp" alt="Terranova Logo" class="brand-logo-media" loading="eager" decoding="async" />
+          </video>
         </span>
         <span class="brand-text">TERRANOVA<span class="brand-store"> STORE</span></span>
       </a>
@@ -70,11 +75,21 @@
         <a href="index.html#quick-contact">HUBUNGI KAMI</a>
       </nav>
 
-      <button class="hamburger" id="hamburgerBtn" aria-label="Buka menu">
-        <span></span>
-        <span></span>
-        <span></span>
-      </button>
+      <div class="navbar-actions">
+        <a href="admin.html" class="nav-admin-btn" title="Portal Admin" aria-label="Portal Admin">
+          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+          <span>Admin</span>
+        </a>
+
+        <button class="hamburger" id="hamburgerBtn" aria-label="Buka menu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
     </div>
   </header>
 
@@ -93,7 +108,7 @@
     </div>
 
     <!-- ===================== TOP UP GAME ===================== -->
-    <section class="product-section accent-cyan" id="topup">
+    <section class="product-section accent-green" id="topup">
       <h2 class="section-title">🎮 TOP UP GAME</h2>
       <p class="section-subtitle">Top up game favoritmu, proses cepat &amp; aman.</p>
       <div class="product-grid" id="grid-topup"><!-- diisi oleh script.js --></div>

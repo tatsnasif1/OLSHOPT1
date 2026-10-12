@@ -1,0 +1,1619 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Portal | Terranova Store</title>
+  <meta name="description" content="Portal Pengelolaan Katalog Produk Terranova Store." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* ================= KHUSUS ADMIN PORTAL ================= */
+    .admin-body {
+      min-height: 100vh;
+      background: radial-gradient(circle at 50% 10%, #0d1430 0%, #060914 60%, #03050c 100%);
+      color: #f1f5f9;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      overflow-x: hidden;
+      padding-bottom: 60px;
+    }
+
+    /* Container */
+    .admin-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px 20px;
+    }
+
+    /* Login Gate */
+    .admin-auth-wrap {
+      min-height: 85vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .admin-auth-card {
+      width: 100%;
+      max-width: 440px;
+      background: rgba(13, 18, 38, 0.85);
+      border: 1px solid rgba(var(--cyan-rgb), 0.3);
+      border-radius: 24px;
+      padding: 36px 30px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 30px rgba(var(--cyan-rgb), 0.15);
+      backdrop-filter: blur(20px);
+      text-align: center;
+      position: relative;
+      isolation: isolate;
+    }
+
+    .admin-auth-icon {
+      width: 68px;
+      height: 68px;
+      margin: 0 auto 18px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, rgba(var(--cyan-rgb), 0.2), rgba(var(--purple-rgb), 0.2));
+      border: 1px solid rgba(var(--cyan-rgb), 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      box-shadow: 0 0 20px rgba(var(--cyan-rgb), 0.3);
+    }
+
+    .admin-auth-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: 1.5px;
+      margin-bottom: 8px;
+    }
+
+    .admin-auth-desc {
+      font-size: 0.86rem;
+      color: #94a3b8;
+      margin-bottom: 26px;
+      line-height: 1.5;
+    }
+
+    .admin-input-group {
+      margin-bottom: 20px;
+      text-align: left;
+    }
+
+    .admin-label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #cbd5e1;
+      margin-bottom: 8px;
+    }
+
+    .admin-input {
+      width: 100%;
+      background: rgba(6, 10, 24, 0.8);
+      border: 1.5px solid rgba(var(--cyan-rgb), 0.25);
+      border-radius: 12px;
+      padding: 13px 16px;
+      color: #ffffff;
+      font-size: 0.95rem;
+      font-family: inherit;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .admin-input:focus {
+      border-color: var(--cyan);
+      box-shadow: 0 0 16px rgba(var(--cyan-rgb), 0.35);
+      background: rgba(6, 10, 24, 0.95);
+    }
+
+    .admin-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      padding: 13px 20px;
+      border-radius: 12px;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.92rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      cursor: pointer;
+      border: none;
+      transition: all 0.25s ease;
+    }
+
+    .admin-btn-primary {
+      background: linear-gradient(135deg, var(--cyan) 0%, #0284c7 100%);
+      color: #040814;
+      box-shadow: 0 4px 20px rgba(var(--cyan-rgb), 0.4);
+    }
+
+    .admin-btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(var(--cyan-rgb), 0.6);
+    }
+
+    .admin-btn-secondary {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #e2e8f0;
+    }
+
+    .admin-btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+
+    .admin-btn-danger {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: #f87171;
+    }
+
+    .admin-btn-danger:hover {
+      background: rgba(239, 68, 68, 0.3);
+      border-color: #ef4444;
+      color: #ffffff;
+    }
+
+    .admin-auth-back {
+      margin-top: 20px;
+      display: inline-block;
+      font-size: 0.84rem;
+      color: #94a3b8;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .admin-auth-back:hover {
+      color: var(--cyan);
+    }
+
+    /* ================= MAIN DASHBOARD ================= */
+    .dashboard-panel {
+      display: none;
+    }
+
+    .dashboard-panel.active {
+      display: block;
+    }
+
+    /* Top Bar */
+    .admin-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+      padding: 16px 24px;
+      background: rgba(13, 18, 38, 0.7);
+      border: 1px solid rgba(var(--cyan-rgb), 0.2);
+      border-radius: 20px;
+      backdrop-filter: blur(16px);
+      margin-bottom: 24px;
+    }
+
+    .admin-brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .admin-brand-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, rgba(var(--cyan-rgb), 0.25), rgba(var(--purple-rgb), 0.25));
+      border: 1px solid rgba(var(--cyan-rgb), 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+    }
+
+    .admin-brand-text h1 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #ffffff;
+      margin: 0;
+      letter-spacing: 1px;
+    }
+
+    .admin-brand-text p {
+      font-size: 0.78rem;
+      color: #94a3b8;
+      margin: 2px 0 0;
+    }
+
+    .admin-topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .admin-badge-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      background: rgba(34, 197, 94, 0.12);
+      border: 1px solid rgba(34, 197, 94, 0.35);
+      border-radius: 30px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #4ade80;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #4ade80;
+      box-shadow: 0 0 8px #4ade80;
+    }
+
+    /* Stats Grid */
+    .admin-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .stat-card {
+      background: rgba(13, 18, 38, 0.65);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 18px;
+      padding: 20px 22px;
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(12px);
+      transition: transform 0.2s, border-color 0.2s;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(var(--cyan-rgb), 0.3);
+    }
+
+    .stat-card-title {
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #94a3b8;
+      margin-bottom: 8px;
+    }
+
+    .stat-card-value {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: #ffffff;
+    }
+
+    .stat-card-sub {
+      font-size: 0.75rem;
+      color: #64748b;
+      margin-top: 4px;
+    }
+
+    /* Action & Search Bar */
+    .admin-controls-bar {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .controls-row-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .search-input-wrap {
+      position: relative;
+      flex: 1;
+      min-width: 260px;
+    }
+
+    .search-input-wrap svg {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #64748b;
+      pointer-events: none;
+    }
+
+    .search-input-wrap input {
+      padding-left: 42px;
+    }
+
+    .category-tabs {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      scrollbar-width: none;
+    }
+
+    .category-tabs::-webkit-scrollbar {
+      display: none;
+    }
+
+    .cat-tab-btn {
+      padding: 8px 16px;
+      border-radius: 12px;
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: #94a3b8;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s ease;
+    }
+
+    .cat-tab-btn:hover {
+      color: #ffffff;
+      border-color: rgba(var(--cyan-rgb), 0.3);
+    }
+
+    .cat-tab-btn.active {
+      background: rgba(var(--cyan-rgb), 0.18);
+      border-color: var(--cyan);
+      color: #22d3ee;
+      box-shadow: 0 0 14px rgba(var(--cyan-rgb), 0.25);
+    }
+
+    /* Product Grid */
+    .admin-products-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 20px;
+    }
+
+    .admin-prod-card {
+      background: rgba(13, 18, 38, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 20px;
+      padding: 22px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      backdrop-filter: blur(14px);
+      transition: all 0.25s ease;
+    }
+
+    .admin-prod-card:hover {
+      border-color: rgba(var(--cyan-rgb), 0.35);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(var(--cyan-rgb), 0.15);
+      transform: translateY(-2px);
+    }
+
+    .admin-prod-card.inactive {
+      opacity: 0.55;
+      filter: grayscale(0.5);
+    }
+
+    .admin-prod-top {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
+    .admin-prod-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      background: #080b18;
+      border: 1px solid rgba(var(--cyan-rgb), 0.16);
+      overflow: hidden;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+    }
+
+    .admin-prod-icon img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      border-radius: 13px;
+    }
+
+    .admin-prod-meta {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .admin-prod-name {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      color: #ffffff;
+      margin: 0 0 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .admin-prod-badges {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .badge-cat {
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: rgba(var(--cyan-rgb), 0.12);
+      color: #38bdf8;
+      border: 1px solid rgba(var(--cyan-rgb), 0.25);
+    }
+
+    .badge-custom {
+      font-size: 0.68rem;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: rgba(236, 72, 153, 0.15);
+      color: #f472b6;
+      border: 1px solid rgba(236, 72, 153, 0.3);
+    }
+
+    .admin-prod-desc {
+      font-size: 0.82rem;
+      color: #94a3b8;
+      line-height: 1.45;
+      margin: 0 0 14px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .admin-packages-summary {
+      background: rgba(6, 10, 24, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 10px 14px;
+      margin-bottom: 16px;
+    }
+
+    .admin-package-item {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.78rem;
+      padding: 3px 0;
+      border-bottom: 1px dashed rgba(255, 255, 255, 0.05);
+    }
+
+    .admin-package-item:last-child {
+      border-bottom: none;
+    }
+
+    .admin-package-item .pkg-lbl {
+      color: #cbd5e1;
+    }
+
+    .admin-package-item .pkg-prc {
+      font-weight: 700;
+      color: #38bdf8;
+    }
+
+    .admin-prod-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-top: 1px solid rgba(255, 255, 255, 0.07);
+      padding-top: 14px;
+    }
+
+    .admin-act-btn {
+      flex: 1;
+      padding: 8px 12px;
+      border-radius: 10px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.2s ease;
+    }
+
+    .act-btn-edit {
+      background: rgba(var(--cyan-rgb), 0.12);
+      border-color: rgba(var(--cyan-rgb), 0.3);
+      color: #38bdf8;
+    }
+
+    .act-btn-edit:hover {
+      background: rgba(var(--cyan-rgb), 0.25);
+      color: #ffffff;
+    }
+
+    .act-btn-toggle {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: rgba(255, 255, 255, 0.15);
+      color: #cbd5e1;
+    }
+
+    .act-btn-toggle:hover {
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    .act-btn-del {
+      background: rgba(239, 68, 68, 0.1);
+      border-color: rgba(239, 68, 68, 0.25);
+      color: #f87171;
+      flex: 0 0 38px;
+      padding: 8px;
+    }
+
+    .act-btn-del:hover {
+      background: rgba(239, 68, 68, 0.25);
+      color: #ffffff;
+    }
+
+    /* Modal Form */
+    .admin-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(3, 5, 12, 0.8);
+      backdrop-filter: blur(10px);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    .admin-modal-backdrop.active {
+      display: flex;
+    }
+
+    .admin-modal {
+      width: 100%;
+      max-width: 600px;
+      background: #0b1126;
+      border: 1px solid rgba(var(--cyan-rgb), 0.35);
+      border-radius: 24px;
+      padding: 28px;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 30px rgba(var(--cyan-rgb), 0.2);
+      position: relative;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .admin-modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 22px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding-bottom: 14px;
+    }
+
+    .admin-modal-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: #ffffff;
+      margin: 0;
+    }
+
+    .modal-close-btn {
+      background: none;
+      border: none;
+      color: #94a3b8;
+      font-size: 1.4rem;
+      cursor: pointer;
+      line-height: 1;
+      padding: 4px;
+    }
+
+    .modal-close-btn:hover {
+      color: #ffffff;
+    }
+
+    .form-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    /* Icon Picker Tabs */
+    .icon-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding-bottom: 8px;
+    }
+
+    .icon-tab-btn {
+      background: none;
+      border: none;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #94a3b8;
+      cursor: pointer;
+      padding: 4px 8px;
+    }
+
+    .icon-tab-btn.active {
+      color: var(--cyan);
+      border-bottom: 2px solid var(--cyan);
+    }
+
+    .icon-tab-content {
+      display: none;
+    }
+
+    .icon-tab-content.active {
+      display: block;
+    }
+
+    .preset-icons-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(46px, 1fr));
+      gap: 8px;
+      max-height: 160px;
+      overflow-y: auto;
+      padding: 4px;
+      background: rgba(6, 10, 24, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+    }
+
+    .preset-icon-choice {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      overflow: hidden;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: all 0.15s;
+    }
+
+    .preset-icon-choice img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .preset-icon-choice:hover {
+      transform: scale(1.08);
+    }
+
+    .preset-icon-choice.selected {
+      border-color: var(--cyan);
+      box-shadow: 0 0 12px var(--cyan);
+    }
+
+    .icon-preview-box {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px;
+      background: rgba(6, 10, 24, 0.7);
+      border: 1px solid rgba(var(--cyan-rgb), 0.2);
+      border-radius: 14px;
+      margin-top: 10px;
+    }
+
+    .preview-img-wrap {
+      width: 48px;
+      height: 48px;
+      border-radius: 13px;
+      overflow: hidden;
+      background: #080b18;
+      border: 1px solid rgba(var(--cyan-rgb), 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .preview-img-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* Package Row Builder */
+    .package-builder-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .pkg-builder-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .pkg-builder-row input {
+      flex: 1;
+    }
+
+    .pkg-row-del {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #f87171;
+      border-radius: 8px;
+      width: 36px;
+      height: 42px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .pkg-row-del:hover {
+      background: #ef4444;
+      color: #ffffff;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    @media (max-width: 640px) {
+      .form-grid-2 {
+        grid-template-columns: 1fr;
+      }
+      .admin-topbar {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+<body class="admin-body">
+
+  <!-- ================= 1. LOGIN GATE (PIN KEAMANAN) ================= -->
+  <section class="admin-auth-wrap" id="authGate">
+    <div class="admin-auth-card">
+      <div class="admin-auth-icon">🔒</div>
+      <h1 class="admin-auth-title">PORTAL ADMIN</h1>
+      <p class="admin-auth-desc">
+        Masuk untuk mengunggah, mengedit, dan mengelola katalog aplikasi & top up game di Terranova Store.
+      </p>
+
+      <form id="loginForm">
+        <div class="admin-input-group">
+          <label class="admin-label" for="adminPin">PIN Keamanan Admin</label>
+          <input
+            type="password"
+            id="adminPin"
+            class="admin-input"
+            placeholder="Masukkan PIN Admin"
+            autocomplete="current-password"
+            required
+          />
+        </div>
+
+        <button type="submit" class="admin-btn admin-btn-primary" id="loginBtn">
+          <span>MASUK DASHBOARD</span>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+        </button>
+
+        <div id="loginFeedback" style="display: none; margin-top: 14px; font-size: 0.85rem; padding: 10px; border-radius: 8px;"></div>
+      </form>
+
+      <a href="index.html" class="admin-auth-back" id="btnBackToStore">← Kembali ke Halaman Utama Toko</a>
+    </div>
+  </section>
+
+  <!-- ================= 2. DASHBOARD MANAGEMENT ================= -->
+  <main class="dashboard-panel" id="dashboardPanel">
+    <div class="admin-container">
+      
+      <!-- Topbar Header -->
+      <header class="admin-topbar">
+        <div class="admin-brand">
+          <div class="admin-brand-icon">⚡</div>
+          <div class="admin-brand-text">
+            <h1>TERRANOVA ADMIN</h1>
+            <p>Manajemen Katalog Aplikasi & Top Up Game</p>
+          </div>
+        </div>
+
+        <div class="admin-topbar-actions">
+          <span class="admin-badge-status">
+            <span class="status-dot"></span>
+            Server Terhubung
+          </span>
+          <a href="index.html" class="admin-btn admin-btn-secondary" id="btnViewStore" style="width: auto; padding: 8px 16px; font-size: 0.8rem;">
+            🛍️ Lihat Toko
+          </a>
+          <button type="button" class="admin-btn admin-btn-danger" id="btnLogout" style="width: auto; padding: 8px 14px; font-size: 0.8rem;">
+            🚪 Keluar
+          </button>
+        </div>
+      </header>
+
+      <!-- Stats Metrics -->
+      <section class="admin-stats-grid">
+        <div class="stat-card">
+          <div class="stat-card-title">Total Produk</div>
+          <div class="stat-card-value" id="statTotalProducts">24</div>
+          <div class="stat-card-sub">Di seluruh kategori katalog</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-title">Produk Aktif</div>
+          <div class="stat-card-value" id="statActiveProducts" style="color: #4ade80;">24</div>
+          <div class="stat-card-sub">Ditampilkan di live storefront</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-title">Kategori Katalog</div>
+          <div class="stat-card-value" id="statCategories" style="color: #38bdf8;">6</div>
+          <div class="stat-card-sub">Streaming, Edit, Musik, Edukasi, Game, dll.</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-title">Total Pilihan Paket</div>
+          <div class="stat-card-value" id="statTotalPackages" style="color: #f472b6;">54</div>
+          <div class="stat-card-sub">Opsi durasi & nominal harga</div>
+        </div>
+      </section>
+
+      <!-- Action Controls -->
+      <section class="admin-controls-bar">
+        <div class="controls-row-top">
+          <div class="search-input-wrap">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input
+              type="text"
+              id="adminSearchInput"
+              class="admin-input"
+              placeholder="Cari produk berdasarkan nama, badge, atau deskripsi..."
+            />
+          </div>
+
+          <button type="button" class="admin-btn admin-btn-primary" id="btnOpenAddProduct" style="width: auto; padding: 12px 22px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            TAMBAH PRODUK BARU
+          </button>
+        </div>
+
+        <!-- Filter Kategori Tabs -->
+        <div class="category-tabs" id="adminCategoryTabs">
+          <button type="button" class="cat-tab-btn active" data-cat="all">Semua Produk</button>
+          <button type="button" class="cat-tab-btn" data-cat="streaming">📺 Streaming</button>
+          <button type="button" class="cat-tab-btn" data-cat="editing">🎬 Editing</button>
+          <button type="button" class="cat-tab-btn" data-cat="listening">🎵 Musik</button>
+          <button type="button" class="cat-tab-btn" data-cat="study">📚 Edukasi</button>
+          <button type="button" class="cat-tab-btn" data-cat="topup">🎮 Game Top Up</button>
+          <button type="button" class="cat-tab-btn" data-cat="lainnya">📦 Lainnya / VPN</button>
+        </div>
+      </section>
+
+      <!-- Products Grid -->
+      <section class="admin-products-grid" id="adminProductsContainer">
+        <!-- Rendered dynamically via JavaScript -->
+      </section>
+
+    </div>
+  </main>
+
+  <!-- ================= 3. MODAL TAMBAH / EDIT PRODUK ================= -->
+  <div class="admin-modal-backdrop" id="productModal">
+    <div class="admin-modal">
+      <div class="admin-modal-header">
+        <h2 class="admin-modal-title" id="modalFormTitle">TAMBAH PRODUK BARU</h2>
+        <button type="button" class="modal-close-btn" id="btnCloseProductModal">&times;</button>
+      </div>
+
+      <form id="productForm">
+        <input type="hidden" id="editProductId" value="" />
+
+        <div class="form-grid-2">
+          <!-- Kategori -->
+          <div class="admin-input-group">
+            <label class="admin-label" for="prodCategory">Kategori *</label>
+            <select id="prodCategory" class="admin-input" required>
+              <option value="streaming">📺 APK Streaming</option>
+              <option value="editing">🎬 APK Editing</option>
+              <option value="listening">🎵 APK Listening / Musik</option>
+              <option value="study">📚 APK Study / Edukasi</option>
+              <option value="topup">🎮 Top Up Game</option>
+              <option value="lainnya">📦 APK Lainnya / Tools</option>
+            </select>
+          </div>
+
+          <!-- Nama Produk -->
+          <div class="admin-input-group">
+            <label class="admin-label" for="prodName">Nama Produk / Game *</label>
+            <input
+              type="text"
+              id="prodName"
+              class="admin-input"
+              placeholder="Contoh: Disney+ Hotstar"
+              required
+            />
+          </div>
+        </div>
+
+        <div class="form-grid-2">
+          <!-- Badge Promo / Label -->
+          <div class="admin-input-group">
+            <label class="admin-label" for="prodBadge">Badge Label (Opsional)</label>
+            <input
+              type="text"
+              id="prodBadge"
+              class="admin-input"
+              placeholder="Contoh: TERLARIS, HOT, PROMO, NEW"
+            />
+          </div>
+
+          <!-- Status Aktif -->
+          <div class="admin-input-group">
+            <label class="admin-label" for="prodActive">Status Tampil</label>
+            <select id="prodActive" class="admin-input">
+              <option value="true">🟢 Tampilkan di Toko (Aktif)</option>
+              <option value="false">⚪ Sembunyikan (Nonaktif)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Deskripsi -->
+        <div class="admin-input-group">
+          <label class="admin-label" for="prodDesc">Deskripsi Singkat *</label>
+          <textarea
+            id="prodDesc"
+            class="admin-input"
+            rows="2"
+            placeholder="Jelaskan fitur utama atau keunggulan produk..."
+            required
+          ></textarea>
+        </div>
+
+        <!-- Pemilihan Ikon Aplikasi -->
+        <div class="admin-input-group">
+          <label class="admin-label">Ikon Aplikasi / Game *</label>
+
+          <div class="icon-tabs">
+            <button type="button" class="icon-tab-btn active" data-tab="uploadTab">Upload Gambar</button>
+            <button type="button" class="icon-tab-btn" data-tab="presetTab">Pilih Ikon Bawaan</button>
+            <button type="button" class="icon-tab-btn" data-tab="urlTab">Link URL Gambar</button>
+          </div>
+
+          <!-- Tab 1: Upload File -->
+          <div class="icon-tab-content active" id="uploadTab">
+            <input
+              type="file"
+              id="iconFileInput"
+              class="admin-input"
+              accept="image/png, image/jpeg, image/webp, image/svg+xml"
+            />
+            <small style="color: #64748b; font-size: 0.74rem; display: block; margin-top: 4px;">
+              Pilih file gambar logo (PNG, JPG, WebP). Akan otomatis disesuaikan secara rapi.
+            </small>
+          </div>
+
+          <!-- Tab 2: Preset Icons -->
+          <div class="icon-tab-content" id="presetTab">
+            <div class="preset-icons-grid" id="presetIconsGrid">
+              <!-- Preset icons loaded via JS -->
+            </div>
+          </div>
+
+          <!-- Tab 3: Custom URL -->
+          <div class="icon-tab-content" id="urlTab">
+            <input
+              type="text"
+              id="iconUrlInput"
+              class="admin-input"
+              placeholder="assets/images/apps/netflix.webp atau URL https://..."
+            />
+          </div>
+
+          <!-- Preview Ikon -->
+          <div class="icon-preview-box">
+            <div class="preview-img-wrap">
+              <img id="iconPreviewImg" src="assets/images/apps/netflix.webp" alt="Preview Ikon" />
+            </div>
+            <div>
+              <div style="font-size: 0.8rem; font-weight: 700; color: #ffffff;">Tampilan Ikon di Kartu</div>
+              <div id="iconPreviewPath" style="font-size: 0.72rem; color: #94a3b8; word-break: break-all;">assets/images/apps/netflix.webp</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Daftar Paket & Harga Dinamis -->
+        <div class="admin-input-group">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <label class="admin-label" style="margin: 0;">Pilihan Paket & Harga *</label>
+            <button type="button" id="btnAddPackageRow" class="admin-btn admin-btn-secondary" style="width: auto; padding: 4px 10px; font-size: 0.75rem;">
+              + Tambah Paket
+            </button>
+          </div>
+
+          <div class="package-builder-list" id="packageBuilderList">
+            <!-- Row template loaded dynamically -->
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="modal-actions">
+          <button type="button" class="admin-btn admin-btn-secondary" id="btnCancelProductModal">Batal</button>
+          <button type="submit" class="admin-btn admin-btn-primary" id="btnSaveProduct">
+            SIMPAN KE KATALOG
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Script Admin Controller -->
+  <script>
+    // State Admin
+    let adminToken = sessionStorage.getItem('terranova_admin_token') || '';
+    let productsList = [];
+    let currentCategoryFilter = 'all';
+    let currentSearchQuery = '';
+    let selectedIconPath = 'assets/images/apps/netflix.webp';
+
+    // Elements
+    const authGate = document.getElementById('authGate');
+    const dashboardPanel = document.getElementById('dashboardPanel');
+    const loginForm = document.getElementById('loginForm');
+    const adminPin = document.getElementById('adminPin');
+    const loginFeedback = document.getElementById('loginFeedback');
+    const btnLogout = document.getElementById('btnLogout');
+    const adminProductsContainer = document.getElementById('adminProductsContainer');
+    const adminSearchInput = document.getElementById('adminSearchInput');
+    const adminCategoryTabs = document.getElementById('adminCategoryTabs');
+    const productModal = document.getElementById('productModal');
+    const productForm = document.getElementById('productForm');
+    const btnOpenAddProduct = document.getElementById('btnOpenAddProduct');
+    const btnCloseProductModal = document.getElementById('btnCloseProductModal');
+    const btnCancelProductModal = document.getElementById('btnCancelProductModal');
+    const modalFormTitle = document.getElementById('modalFormTitle');
+    const editProductId = document.getElementById('editProductId');
+    const packageBuilderList = document.getElementById('packageBuilderList');
+    const btnAddPackageRow = document.getElementById('btnAddPackageRow');
+    const iconPreviewImg = document.getElementById('iconPreviewImg');
+    const iconPreviewPath = document.getElementById('iconPreviewPath');
+    const iconFileInput = document.getElementById('iconFileInput');
+    const iconUrlInput = document.getElementById('iconUrlInput');
+    const presetIconsGrid = document.getElementById('presetIconsGrid');
+
+    // Init
+    window.addEventListener('DOMContentLoaded', () => {
+      if (adminToken) {
+        showDashboard();
+      } else {
+        showLogin();
+      }
+      loadPresetIcons();
+    });
+
+    // Check Login
+    function showLogin() {
+      authGate.style.display = 'flex';
+      dashboardPanel.classList.remove('active');
+    }
+
+    function showDashboard() {
+      authGate.style.display = 'none';
+      dashboardPanel.classList.add('active');
+      fetchProducts();
+    }
+
+    // Login Form Submit
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const pin = adminPin.value.trim();
+      if (!pin) return;
+
+      try {
+        const res = await fetch('/api/admin/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ pin })
+        });
+        const data = await res.json();
+
+        if (data.success && data.token) {
+          adminToken = data.token;
+          sessionStorage.setItem('terranova_admin_token', adminToken);
+          loginFeedback.style.display = 'block';
+          loginFeedback.style.background = 'rgba(34, 197, 94, 0.2)';
+          loginFeedback.style.color = '#4ade80';
+          loginFeedback.textContent = data.message;
+          setTimeout(() => showDashboard(), 500);
+        } else {
+          loginFeedback.style.display = 'block';
+          loginFeedback.style.background = 'rgba(239, 68, 68, 0.2)';
+          loginFeedback.style.color = '#f87171';
+          loginFeedback.textContent = data.message || 'PIN Admin Salah';
+        }
+      } catch (err) {
+        loginFeedback.style.display = 'block';
+        loginFeedback.style.background = 'rgba(239, 68, 68, 0.2)';
+        loginFeedback.style.color = '#f87171';
+        loginFeedback.textContent = 'Gagal menghubungi server.';
+      }
+    });
+
+    // Logout -> langsung alihkan ke halaman beranda tanpa intro
+    btnLogout.addEventListener('click', async () => {
+      try {
+        await fetch('/api/admin/logout', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${adminToken}` }
+        });
+      } catch (_) {}
+      adminToken = '';
+      sessionStorage.removeItem('terranova_admin_token');
+      sessionStorage.setItem('terranova_navigated_back', 'true');
+      window.location.href = 'index.html';
+    });
+
+    // Lihat Toko -> langsung alihkan ke halaman beranda tanpa intro
+    const btnViewStore = document.getElementById('btnViewStore');
+    if (btnViewStore) {
+      btnViewStore.addEventListener('click', (e) => {
+        e.preventDefault();
+        sessionStorage.setItem('terranova_navigated_back', 'true');
+        window.location.href = 'index.html';
+      });
+    }
+
+    // Kembali ke Halaman Utama Toko -> langsung alihkan tanpa intro
+    const btnBackToStore = document.getElementById('btnBackToStore');
+    if (btnBackToStore) {
+      btnBackToStore.addEventListener('click', (e) => {
+        e.preventDefault();
+        sessionStorage.setItem('terranova_navigated_back', 'true');
+        window.location.href = 'index.html';
+      });
+    }
+
+    // Fetch Products
+    async function fetchProducts() {
+      try {
+        const res = await fetch('/api/products?all=true');
+        const data = await res.json();
+        if (data.success && Array.isArray(data.products)) {
+          productsList = data.products;
+          updateStats();
+          renderAdminProducts();
+        }
+      } catch (err) {
+        console.error('Error fetching products:', err);
+      }
+    }
+
+    // Update Stats
+    function updateStats() {
+      document.getElementById('statTotalProducts').textContent = productsList.length;
+      const activeCount = productsList.filter(p => p.active !== false).length;
+      document.getElementById('statActiveProducts').textContent = activeCount;
+
+      const cats = new Set(productsList.map(p => p.category));
+      document.getElementById('statCategories').textContent = cats.size;
+
+      const totalPkgs = productsList.reduce((acc, p) => acc + (p.packages ? p.packages.length : 0), 0);
+      document.getElementById('statTotalPackages').textContent = totalPkgs;
+    }
+
+    // Filter & Search
+    adminCategoryTabs.addEventListener('click', (e) => {
+      const btn = e.target.closest('.cat-tab-btn');
+      if (!btn) return;
+      document.querySelectorAll('.cat-tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentCategoryFilter = btn.getAttribute('data-cat') || 'all';
+      renderAdminProducts();
+    });
+
+    adminSearchInput.addEventListener('input', (e) => {
+      currentSearchQuery = e.target.value.toLowerCase().trim();
+      renderAdminProducts();
+    });
+
+    // Render Admin Products
+    function renderAdminProducts() {
+      adminProductsContainer.innerHTML = '';
+
+      let filtered = productsList;
+
+      // Filter by category
+      if (currentCategoryFilter !== 'all') {
+        filtered = filtered.filter(p => p.category === currentCategoryFilter);
+      }
+
+      // Filter by search query
+      if (currentSearchQuery) {
+        filtered = filtered.filter(p => 
+          (p.name && p.name.toLowerCase().includes(currentSearchQuery)) ||
+          (p.description && p.description.toLowerCase().includes(currentSearchQuery)) ||
+          (p.badge && p.badge.toLowerCase().includes(currentSearchQuery))
+        );
+      }
+
+      if (filtered.length === 0) {
+        adminProductsContainer.innerHTML = `
+          <div style="grid-column: 1 / -1; text-align: center; padding: 48px 20px; background: rgba(13, 18, 38, 0.5); border-radius: 18px; border: 1px dashed rgba(255,255,255,0.1);">
+            <div style="font-size: 2rem; margin-bottom: 8px;">🔍</div>
+            <div style="font-size: 1.1rem; font-weight: 700; color: #ffffff;">Tidak ada produk yang sesuai</div>
+            <div style="color: #94a3b8; font-size: 0.85rem; margin-top: 4px;">Coba ubah kata kunci pencarian atau filter kategori Anda.</div>
+          </div>
+        `;
+        return;
+      }
+
+      const catLabels = {
+        streaming: '📺 Streaming',
+        editing: '🎬 Editing',
+        listening: '🎵 Musik',
+        study: '📚 Edukasi',
+        topup: '🎮 Top Up',
+        lainnya: '📦 Lainnya'
+      };
+
+      filtered.forEach(p => {
+        const card = document.createElement('div');
+        card.className = `admin-prod-card ${p.active === false ? 'inactive' : ''}`;
+
+        const pkgRows = (p.packages || []).map(pkg => `
+          <div class="admin-package-item">
+            <span class="pkg-lbl">${pkg.label}</span>
+            <span class="pkg-prc">${pkg.price}</span>
+          </div>
+        `).join('');
+
+        const badgeHtml = p.badge ? `<span class="badge-custom">${p.badge}</span>` : '';
+
+        card.innerHTML = `
+          <div>
+            <div class="admin-prod-top">
+              <div class="admin-prod-icon">
+                <img src="${p.iconUrl || 'assets/images/apps/netflix.webp'}" alt="${p.name}" onerror="this.src='assets/images/apps/netflix.webp'" />
+              </div>
+              <div class="admin-prod-meta">
+                <h3 class="admin-prod-name" title="${p.name}">${p.name}</h3>
+                <div class="admin-prod-badges">
+                  <span class="badge-cat">${catLabels[p.category] || p.category}</span>
+                  ${badgeHtml}
+                </div>
+              </div>
+            </div>
+
+            <p class="admin-prod-desc">${p.description || 'Tidak ada deskripsi.'}</p>
+            <div class="admin-packages-summary">${pkgRows || '<div style="color:#64748b;font-size:0.75rem;">Belum ada paket</div>'}</div>
+          </div>
+
+          <div class="admin-prod-actions">
+            <button type="button" class="admin-act-btn act-btn-edit" data-id="${p.id}">
+              ✏️ Edit
+            </button>
+            <button type="button" class="admin-act-btn act-btn-toggle" data-id="${p.id}">
+              ${p.active === false ? '👁️ Tampilkan' : '🚫 Sembunyikan'}
+            </button>
+            <button type="button" class="admin-act-btn act-btn-del" data-id="${p.id}" title="Hapus Produk">
+              🗑️
+            </button>
+          </div>
+        `;
+
+        // Event Listeners
+        card.querySelector('.act-btn-edit').addEventListener('click', () => openEditProductModal(p));
+        card.querySelector('.act-btn-toggle').addEventListener('click', () => toggleProductStatus(p.id));
+        card.querySelector('.act-btn-del').addEventListener('click', () => deleteProduct(p.id, p.name));
+
+        adminProductsContainer.appendChild(card);
+      });
+    }
+
+    // Toggle Product Status
+    async function toggleProductStatus(id) {
+      try {
+        const res = await fetch(`/api/admin/products/${id}/toggle`, {
+          method: 'PATCH',
+          headers: { 'Authorization': `Bearer ${adminToken}` }
+        });
+        const data = await res.json();
+        if (data.success) {
+          const item = productsList.find(p => p.id === id);
+          if (item) item.active = data.active;
+          updateStats();
+          renderAdminProducts();
+        } else {
+          alert(data.message || 'Gagal mengubah status');
+        }
+      } catch (err) {
+        alert('Terjadi kesalahan koneksi');
+      }
+    }
+
+    // Delete Product
+    async function deleteProduct(id, name) {
+      if (!confirm(`Apakah Anda yakin ingin menghapus produk "${name}" dari katalog?`)) return;
+
+      try {
+        const res = await fetch(`/api/admin/products/${id}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${adminToken}` }
+        });
+        const data = await res.json();
+        if (data.success) {
+          productsList = productsList.filter(p => p.id !== id);
+          updateStats();
+          renderAdminProducts();
+        } else {
+          alert(data.message || 'Gagal menghapus produk');
+        }
+      } catch (err) {
+        alert('Terjadi kesalahan koneksi');
+      }
+    }
+
+    // Modal Add / Edit
+    btnOpenAddProduct.addEventListener('click', () => {
+      openAddProductModal();
+    });
+
+    btnCloseProductModal.addEventListener('click', () => closeProductModal());
+    btnCancelProductModal.addEventListener('click', () => closeProductModal());
+
+    function openAddProductModal() {
+      modalFormTitle.textContent = 'TAMBAH PRODUK BARU';
+      editProductId.value = '';
+      productForm.reset();
+      selectedIconPath = 'assets/images/apps/netflix.webp';
+      updateIconPreview(selectedIconPath);
+      resetPackageRows([
+        { label: '1 Bulan', price: 'Rp 25.000' },
+        { label: '3 Bulan', price: 'Rp 65.000' }
+      ]);
+      productModal.classList.add('active');
+    }
+
+    function openEditProductModal(p) {
+      modalFormTitle.textContent = `EDIT PRODUK: ${p.name.toUpperCase()}`;
+      editProductId.value = p.id;
+      document.getElementById('prodName').value = p.name;
+      document.getElementById('prodCategory').value = p.category;
+      document.getElementById('prodBadge').value = p.badge || '';
+      document.getElementById('prodDesc').value = p.description || '';
+      document.getElementById('prodActive').value = p.active !== false ? 'true' : 'false';
+
+      selectedIconPath = p.iconUrl || 'assets/images/apps/netflix.webp';
+      iconUrlInput.value = selectedIconPath;
+      updateIconPreview(selectedIconPath);
+
+      resetPackageRows(p.packages || [{ label: '1 Bulan', price: 'Rp XX.XXX' }]);
+      productModal.classList.add('active');
+    }
+
+    function closeProductModal() {
+      productModal.classList.remove('active');
+    }
+
+    // Package Row Builder
+    function resetPackageRows(packages) {
+      packageBuilderList.innerHTML = '';
+      packages.forEach(pkg => addPackageRow(pkg.label, pkg.price));
+    }
+
+    function addPackageRow(label = '', price = '') {
+      const row = document.createElement('div');
+      row.className = 'pkg-builder-row';
+      row.innerHTML = `
+        <input type="text" class="admin-input pkg-label-input" placeholder="Durasi / Varian (misal: 1 Bulan)" value="${label}" required />
+        <input type="text" class="admin-input pkg-price-input" placeholder="Harga (misal: Rp 25.000)" value="${price}" required />
+        <button type="button" class="pkg-row-del" title="Hapus Paket">&times;</button>
+      `;
+
+      row.querySelector('.pkg-row-del').addEventListener('click', () => {
+        if (packageBuilderList.children.length > 1) {
+          row.remove();
+        } else {
+          alert('Produk harus memiliki minimal 1 paket');
+        }
+      });
+
+      packageBuilderList.appendChild(row);
+    }
+
+    btnAddPackageRow.addEventListener('click', () => {
+      addPackageRow('', 'Rp ');
+    });
+
+    // Icon Management
+    function updateIconPreview(url) {
+      iconPreviewImg.src = url;
+      iconPreviewPath.textContent = url;
+    }
+
+    // Icon Tabs
+    document.querySelectorAll('.icon-tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.icon-tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.icon-tab-content').forEach(c => c.classList.remove('active'));
+
+        btn.classList.add('active');
+        const tabId = btn.getAttribute('data-tab');
+        document.getElementById(tabId).classList.add('active');
+      });
+    });
+
+    iconUrlInput.addEventListener('input', (e) => {
+      const val = e.target.value.trim();
+      if (val) {
+        selectedIconPath = val;
+        updateIconPreview(val);
+      }
+    });
+
+    // Handle File Upload
+    iconFileInput.addEventListener('change', (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = async (event) => {
+        const base64Data = event.target.result;
+        updateIconPreview(base64Data);
+
+        // Upload to server
+        try {
+          const res = await fetch('/api/admin/upload-icon', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${adminToken}`
+            },
+            body: JSON.stringify({
+              base64Data,
+              filename: file.name,
+              appName: document.getElementById('prodName').value || 'app-icon'
+            })
+          });
+          const data = await res.json();
+          if (data.success && data.iconUrl) {
+            selectedIconPath = data.iconUrl;
+            updateIconPreview(selectedIconPath);
+          }
+        } catch (err) {
+          console.error('Error uploading file:', err);
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // Load Preset Icons
+    async function loadPresetIcons() {
+      try {
+        const res = await fetch('/api/icons');
+        const data = await res.json();
+        if (data.success && Array.isArray(data.icons)) {
+          presetIconsGrid.innerHTML = '';
+          data.icons.forEach(ic => {
+            const btn = document.createElement('div');
+            btn.className = 'preset-icon-choice';
+            btn.title = ic.name;
+            btn.innerHTML = `<img src="${ic.path}" alt="${ic.name}" loading="lazy" />`;
+            btn.addEventListener('click', () => {
+              document.querySelectorAll('.preset-icon-choice').forEach(b => b.classList.remove('selected'));
+              btn.classList.add('selected');
+              selectedIconPath = ic.path;
+              updateIconPreview(selectedIconPath);
+            });
+            presetIconsGrid.appendChild(btn);
+          });
+        }
+      } catch (_) {}
+    }
+
+    // Save Product (Submit Form)
+    productForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const id = editProductId.value;
+      const name = document.getElementById('prodName').value.trim();
+      const category = document.getElementById('prodCategory').value;
+      const badge = document.getElementById('prodBadge').value.trim();
+      const description = document.getElementById('prodDesc').value.trim();
+      const active = document.getElementById('prodActive').value === 'true';
+
+      // Gather packages
+      const pkgRows = packageBuilderList.querySelectorAll('.pkg-builder-row');
+      const packages = [];
+      pkgRows.forEach(row => {
+        const lbl = row.querySelector('.pkg-label-input').value.trim();
+        const prc = row.querySelector('.pkg-price-input').value.trim();
+        if (lbl && prc) {
+          packages.push({ label: lbl, price: prc });
+        }
+      });
+
+      if (packages.length === 0) {
+        alert('Minimal harus mengisi 1 paket dan harga');
+        return;
+      }
+
+      const payload = {
+        name,
+        category,
+        badge,
+        description,
+        iconUrl: selectedIconPath,
+        packages,
+        active
+      };
+
+      try {
+        let res;
+        if (id) {
+          // Update
+          res = await fetch(`/api/admin/products/${id}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${adminToken}`
+            },
+            body: JSON.stringify(payload)
+          });
+        } else {
+          // Create
+          res = await fetch('/api/admin/products', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${adminToken}`
+            },
+            body: JSON.stringify(payload)
+          });
+        }
+
+        const data = await res.json();
+        if (data.success) {
+          closeProductModal();
+          await fetchProducts();
+          alert(data.message);
+        } else {
+          alert(data.message || 'Gagal menyimpan produk');
+        }
+      } catch (err) {
+        alert('Terjadi kesalahan saat menyimpan produk');
+      }
+    });
+  </script>
+</body>
+</html>
