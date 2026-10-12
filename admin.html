@@ -1052,17 +1052,44 @@
           </div>
         </div>
 
-        <!-- Daftar Paket & Harga Dinamis -->
-        <div class="admin-input-group">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-            <label class="admin-label" style="margin: 0;">Pilihan Paket & Harga *</label>
-            <button type="button" id="btnAddPackageRow" class="admin-btn admin-btn-secondary" style="width: auto; padding: 4px 10px; font-size: 0.75rem;">
-              + Tambah Paket
-            </button>
+        <!-- Pilihan Paket (Opsional) & Harga -->
+        <div class="admin-input-group" style="background: rgba(30, 41, 59, 0.5); padding: 16px; border-radius: 10px; border: 1px solid rgba(148, 163, 184, 0.2);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; gap: 12px;">
+            <div>
+              <label class="admin-label" style="margin-bottom: 2px;">Sistem Paket / Varian (Opsional)</label>
+              <div style="font-size: 0.74rem; color: #94a3b8;">
+                Centang jika produk punya opsi seperti Sharing/Private, durasi, dll. Jika tidak dicentang, produk memakai harga tunggal.
+              </div>
+            </div>
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; white-space: nowrap; user-select: none;">
+              <input type="checkbox" id="toggleHasPackages" style="width: 18px; height: 18px; cursor: pointer; accent-color: #22d3ee;" />
+              <span style="font-size: 0.8rem; font-weight: 700; color: #22d3ee;">Ada Paket</span>
+            </label>
           </div>
 
-          <div class="package-builder-list" id="packageBuilderList">
-            <!-- Row template loaded dynamically -->
+          <!-- Opsi 1: Harga Tunggal (Tanpa Paket) -->
+          <div id="singlePriceGroup">
+            <label class="admin-label" for="prodSinglePrice">Harga Produk *</label>
+            <input
+              type="text"
+              id="prodSinglePrice"
+              class="admin-input"
+              placeholder="Contoh: Rp 25.000 atau Rp XX.XXX"
+              value="Rp 25.000"
+            />
+          </div>
+
+          <!-- Opsi 2: Daftar Paket & Harga Dinamis (Bebas Tulis: Sharing, Private, dll) -->
+          <div id="multiPackageGroup" style="display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <span style="font-size: 0.78rem; font-weight: 700; color: #cbd5e1;">Daftar Varian / Paket:</span>
+              <button type="button" id="btnAddPackageRow" class="admin-btn admin-btn-secondary" style="width: auto; padding: 4px 10px; font-size: 0.75rem;">
+                + Tambah Paket
+              </button>
+            </div>
+            <div class="package-builder-list" id="packageBuilderList">
+              <!-- Row template loaded dynamically -->
+            </div>
           </div>
         </div>
 
@@ -1105,11 +1132,29 @@
     const editProductId = document.getElementById('editProductId');
     const packageBuilderList = document.getElementById('packageBuilderList');
     const btnAddPackageRow = document.getElementById('btnAddPackageRow');
+    const toggleHasPackages = document.getElementById('toggleHasPackages');
+    const singlePriceGroup = document.getElementById('singlePriceGroup');
+    const multiPackageGroup = document.getElementById('multiPackageGroup');
+    const prodSinglePrice = document.getElementById('prodSinglePrice');
     const iconPreviewImg = document.getElementById('iconPreviewImg');
     const iconPreviewPath = document.getElementById('iconPreviewPath');
     const iconFileInput = document.getElementById('iconFileInput');
     const iconUrlInput = document.getElementById('iconUrlInput');
     const presetIconsGrid = document.getElementById('presetIconsGrid');
+
+    toggleHasPackages.addEventListener('change', () => {
+      if (toggleHasPackages.checked) {
+        singlePriceGroup.style.display = 'none';
+        multiPackageGroup.style.display = 'block';
+        if (packageBuilderList.children.length === 0) {
+          addPackageRow('Sharing', 'Rp 15.000');
+          addPackageRow('Private', 'Rp 35.000');
+        }
+      } else {
+        singlePriceGroup.style.display = 'block';
+        multiPackageGroup.style.display = 'none';
+      }
+    });
 
     // Init
     window.addEventListener('DOMContentLoaded', () => {
@@ -1290,12 +1335,20 @@
         const card = document.createElement('div');
         card.className = `admin-prod-card ${p.active === false ? 'inactive' : ''}`;
 
-        const pkgRows = (p.packages || []).map(pkg => `
-          <div class="admin-package-item">
-            <span class="pkg-lbl">${pkg.label}</span>
-            <span class="pkg-prc">${pkg.price}</span>
-          </div>
-        `).join('');
+        const hasPkg = (p.hasPackages === true || (Array.isArray(p.packages) && p.packages.length > 0 && p.packages.some(pkg => pkg.label && pkg.label.trim())));
+        const pkgRows = hasPkg && Array.isArray(p.packages) && p.packages.length > 0
+          ? p.packages.map(pkg => `
+              <div class="admin-package-item">
+                <span class="pkg-lbl">${pkg.label}</span>
+                <span class="pkg-prc">${pkg.price}</span>
+              </div>
+            `).join('')
+          : `
+              <div class="admin-package-item" style="border-left: 2px solid #22d3ee; padding-left: 8px;">
+                <span class="pkg-lbl" style="color: #94a3b8;">Harga Produk:</span>
+                <span class="pkg-prc" style="color: #22d3ee; font-weight: 700;">${p.price || (p.packages && p.packages[0] ? p.packages[0].price : 'Rp XX.XXX')}</span>
+              </div>
+            `;
 
         const badgeHtml = p.badge ? `<span class="badge-custom">${p.badge}</span>` : '';
 
@@ -1397,9 +1450,13 @@
       productForm.reset();
       selectedIconPath = 'assets/images/apps/netflix.webp';
       updateIconPreview(selectedIconPath);
+      toggleHasPackages.checked = false;
+      singlePriceGroup.style.display = 'block';
+      multiPackageGroup.style.display = 'none';
+      prodSinglePrice.value = 'Rp 25.000';
       resetPackageRows([
-        { label: '1 Bulan', price: 'Rp 25.000' },
-        { label: '3 Bulan', price: 'Rp 65.000' }
+        { label: 'Sharing', price: 'Rp 15.000' },
+        { label: 'Private', price: 'Rp 35.000' }
       ]);
       productModal.classList.add('active');
     }
@@ -1417,7 +1474,23 @@
       iconUrlInput.value = selectedIconPath;
       updateIconPreview(selectedIconPath);
 
-      resetPackageRows(p.packages || [{ label: '1 Bulan', price: 'Rp XX.XXX' }]);
+      const hasPkg = p.hasPackages === true || (Array.isArray(p.packages) && p.packages.length > 0 && p.packages.some(pkg => pkg.label && pkg.label.trim()));
+      toggleHasPackages.checked = hasPkg;
+
+      if (hasPkg) {
+        singlePriceGroup.style.display = 'none';
+        multiPackageGroup.style.display = 'block';
+        resetPackageRows(p.packages || []);
+      } else {
+        singlePriceGroup.style.display = 'block';
+        multiPackageGroup.style.display = 'none';
+        prodSinglePrice.value = p.price || (p.packages && p.packages[0] ? p.packages[0].price : 'Rp XX.XXX');
+        resetPackageRows(p.packages && p.packages.length > 0 ? p.packages : [
+          { label: 'Sharing', price: 'Rp 15.000' },
+          { label: 'Private', price: 'Rp 35.000' }
+        ]);
+      }
+
       productModal.classList.add('active');
     }
 
@@ -1428,24 +1501,22 @@
     // Package Row Builder
     function resetPackageRows(packages) {
       packageBuilderList.innerHTML = '';
-      packages.forEach(pkg => addPackageRow(pkg.label, pkg.price));
+      if (Array.isArray(packages)) {
+        packages.forEach(pkg => addPackageRow(pkg.label, pkg.price));
+      }
     }
 
     function addPackageRow(label = '', price = '') {
       const row = document.createElement('div');
       row.className = 'pkg-builder-row';
       row.innerHTML = `
-        <input type="text" class="admin-input pkg-label-input" placeholder="Durasi / Varian (misal: 1 Bulan)" value="${label}" required />
-        <input type="text" class="admin-input pkg-price-input" placeholder="Harga (misal: Rp 25.000)" value="${price}" required />
+        <input type="text" class="admin-input pkg-label-input" placeholder="Varian / Paket (misal: Sharing, Private, 1 Bulan)" value="${label}" />
+        <input type="text" class="admin-input pkg-price-input" placeholder="Harga (misal: Rp 15.000)" value="${price}" />
         <button type="button" class="pkg-row-del" title="Hapus Paket">&times;</button>
       `;
 
       row.querySelector('.pkg-row-del').addEventListener('click', () => {
-        if (packageBuilderList.children.length > 1) {
-          row.remove();
-        } else {
-          alert('Produk harus memiliki minimal 1 paket');
-        }
+        row.remove();
       });
 
       packageBuilderList.appendChild(row);
@@ -1552,20 +1623,24 @@
       const description = document.getElementById('prodDesc').value.trim();
       const active = document.getElementById('prodActive').value === 'true';
 
-      // Gather packages
-      const pkgRows = packageBuilderList.querySelectorAll('.pkg-builder-row');
+      const hasPackages = toggleHasPackages.checked;
       const packages = [];
-      pkgRows.forEach(row => {
-        const lbl = row.querySelector('.pkg-label-input').value.trim();
-        const prc = row.querySelector('.pkg-price-input').value.trim();
-        if (lbl && prc) {
-          packages.push({ label: lbl, price: prc });
-        }
-      });
+      let directPrice = prodSinglePrice.value.trim() || 'Rp XX.XXX';
 
-      if (packages.length === 0) {
-        alert('Minimal harus mengisi 1 paket dan harga');
-        return;
+      if (hasPackages) {
+        const pkgRows = packageBuilderList.querySelectorAll('.pkg-builder-row');
+        pkgRows.forEach(row => {
+          const lbl = row.querySelector('.pkg-label-input').value.trim();
+          const prc = row.querySelector('.pkg-price-input').value.trim();
+          if (lbl || prc) {
+            packages.push({ label: lbl || 'Varian', price: prc || 'Rp XX.XXX' });
+          }
+        });
+        if (packages.length === 0) {
+          alert('Anda mengaktifkan opsi paket, silakan klik "+ Tambah Paket" atau matikan centang "Ada Paket"');
+          return;
+        }
+        directPrice = packages[0].price;
       }
 
       const payload = {
@@ -1574,6 +1649,8 @@
         badge,
         description,
         iconUrl: selectedIconPath,
+        hasPackages,
+        price: directPrice,
         packages,
         active
       };

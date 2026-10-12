@@ -2718,6 +2718,29 @@ html.intro-skip-init .intro {
   text-shadow: var(--glow-gold);
 }
 
+.product-single-price-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px dashed var(--border-glass);
+  padding-top: 14px;
+  margin-top: auto;
+}
+
+.single-price-label {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.single-price-val {
+  color: var(--gold);
+  font-weight: 700;
+  font-size: 0.95rem;
+  white-space: nowrap;
+  text-shadow: var(--glow-gold);
+}
+
 /* ================= 8b. SKELETON LOADER ================= */
 .skeleton-card {
   position: relative;

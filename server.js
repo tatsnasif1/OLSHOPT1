@@ -8,9 +8,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-// Cloud Run injects PORT (typically 8080 in production, or 3000 in dev/local).
-// Listening on process.env.PORT is required for Cloud Run health checks.
-const PORT = Number(process.env.PORT) || 3000;
+const PORT = 3000;
 
 // Middleware Body Parser (support base64 image upload)
 app.use(express.json({ limit: '20mb' }));
@@ -209,12 +207,14 @@ app.post('/api/admin/products', requireAdmin, (req, res) => {
       return;
     }
 
-    const validPackages = Array.isArray(packages) && packages.length > 0
+    const hasPkg = req.body.hasPackages !== undefined ? Boolean(req.body.hasPackages) : (Array.isArray(packages) && packages.length > 0);
+    const validPackages = hasPkg && Array.isArray(packages) && packages.length > 0
       ? packages.map((pkg) => ({
-          label: (pkg.label || '1 Bulan').trim(),
+          label: (pkg.label || '').trim(),
           price: (pkg.price || 'Rp XX.XXX').trim()
-        }))
-      : [{ label: '1 Bulan', price: 'Rp XX.XXX' }];
+        })).filter(pkg => pkg.label || pkg.price)
+      : [];
+    const directPrice = (req.body.price || (validPackages[0] ? validPackages[0].price : 'Rp XX.XXX')).trim();
 
     // Buat unique ID berdasarkan nama
     const baseId = name.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-');
@@ -227,6 +227,8 @@ app.post('/api/admin/products', requireAdmin, (req, res) => {
       description: (description || '').trim(),
       badge: (badge || '').trim(),
       iconUrl: (iconUrl || 'assets/images/apps/netflix.webp').trim(),
+      hasPackages: validPackages.length > 0,
+      price: directPrice,
       packages: validPackages,
       active: active !== false,
       createdAt: new Date().toISOString()
@@ -263,12 +265,23 @@ app.put('/api/admin/products/:id', requireAdmin, (req, res) => {
 
     const current = products[index];
 
-    const validPackages = Array.isArray(packages) && packages.length > 0
-      ? packages.map((pkg) => ({
-          label: (pkg.label || '1 Bulan').trim(),
-          price: (pkg.price || 'Rp XX.XXX').trim()
-        }))
-      : current.packages;
+    const hasPkg = req.body.hasPackages !== undefined
+      ? Boolean(req.body.hasPackages)
+      : (Array.isArray(packages) ? packages.length > 0 : (current.hasPackages ?? (current.packages && current.packages.length > 0)));
+
+    let validPackages = current.packages || [];
+    if (packages !== undefined) {
+      validPackages = hasPkg && Array.isArray(packages) && packages.length > 0
+        ? packages.map((pkg) => ({
+            label: (pkg.label || '').trim(),
+            price: (pkg.price || 'Rp XX.XXX').trim()
+          })).filter(pkg => pkg.label || pkg.price)
+        : [];
+    }
+
+    const directPrice = req.body.price !== undefined
+      ? req.body.price.trim()
+      : (validPackages.length > 0 ? validPackages[0].price : (current.price || 'Rp XX.XXX'));
 
     const updated = {
       ...current,
@@ -277,6 +290,8 @@ app.put('/api/admin/products/:id', requireAdmin, (req, res) => {
       description: description !== undefined ? description.trim() : current.description,
       badge: badge !== undefined ? badge.trim() : current.badge,
       iconUrl: iconUrl !== undefined ? iconUrl.trim() : current.iconUrl,
+      hasPackages: validPackages.length > 0,
+      price: directPrice,
       packages: validPackages,
       active: active !== undefined ? active : current.active,
       updatedAt: new Date().toISOString()
@@ -363,24 +378,10 @@ app.get('*', (_req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Primary Server Listener on PORT (e.g. 8080 in Cloud Run production, 3000 in dev)
+// Server Listener on Port 3000
 const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`Terranova Store server running on http://0.0.0.0:${PORT}`);
 });
-
-// If PORT is not 3000 (e.g. PORT=8080 on Cloud Run production), also bind to 3000 as secondary
-// so internal proxies or dev bridges can reach it regardless of environment.
-if (PORT !== 3000) {
-  try {
-    const auxServer = app.listen(3000, '0.0.0.0', () => {
-      console.log('Terranova Store auxiliary listener running on http://0.0.0.0:3000');
-    });
-    auxServer.on('error', (err) => {
-      // EADDRINUSE is expected if port 3000 is used by another service; ignore safely
-      console.log('Auxiliary port 3000 status:', err.code);
-    });
-  } catch (_) {}
-}
 
 // Graceful shutdown
 process.on('SIGTERM', () => {

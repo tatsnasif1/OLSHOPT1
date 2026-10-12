@@ -328,6 +328,30 @@ const categoryAccents = {
 /* ================= 3. HELPER: WHATSAPP LINK GENERATOR ================= */
 
 /**
+ * Format & deteksi harga nominal secara otomatis.
+ * Mendeteksi apakah harga masih placeholder (XXX / Rp XX.XXX) atau sudah memiliki nominal riil.
+ */
+function parsePriceInfo(priceStr) {
+  if (!priceStr) {
+    return { hasRealPrice: false, display: "Rp XX.XXX", nominalOnly: "" };
+  }
+  const clean = String(priceStr).trim();
+  // Cek apakah masih berupa placeholder (XXX, Rp XX.XXX, xx, dsb.)
+  const isPlaceholder = /x{2,}/i.test(clean) || /^\?+$/.test(clean);
+  if (isPlaceholder) {
+    return { hasRealPrice: false, display: clean, nominalOnly: "" };
+  }
+
+  // Jika input berupa angka murni seperti "25000", otomatis format jadi "Rp 25.000"
+  if (/^\d+$/.test(clean)) {
+    const formatted = "Rp " + Number(clean).toLocaleString("id-ID");
+    return { hasRealPrice: true, display: formatted, nominalOnly: formatted };
+  }
+
+  return { hasRealPrice: true, display: clean, nominalOnly: clean };
+}
+
+/**
  * Membuat link wa.me lengkap dengan pesan otomatis yang sudah di-encode.
  * @param {string} message - isi pesan WhatsApp
  * @returns {string} URL wa.me
@@ -337,13 +361,21 @@ function buildWhatsAppLink(message) {
 }
 
 /** Pesan order untuk keseluruhan produk (tanpa paket spesifik) */
-function buildProductOrderMessage(productName) {
-  return `Halo Admin Terranova Store! Mau order *${productName}* nih kak, ready kah?`;
+function buildProductOrderMessage(productName, price = "") {
+  const pInfo = parsePriceInfo(price);
+  if (pInfo.hasRealPrice) {
+    return `Halo Kak Admin Terranova Store! Mau order ${productName} seharga ${pInfo.nominalOnly} nih kak. Ditunggu kak, terima kasih!`;
+  }
+  return `Halo Kak Admin Terranova Store! Mau order ${productName} nih kak, ready kah? Ditunggu kak, terima kasih!`;
 }
 
 /** Pesan order untuk produk + paket tertentu */
-function buildPackageOrderMessage(productName, packageLabel) {
-  return `Halo Admin Terranova Store! Mau order *${productName}* paket *${packageLabel}* nih kak, siap proses!`;
+function buildPackageOrderMessage(productName, packageLabel, price = "") {
+  const pInfo = parsePriceInfo(price);
+  if (pInfo.hasRealPrice) {
+    return `Halo Kak Admin Terranova Store! Mau order ${productName} paket ${packageLabel} seharga ${pInfo.nominalOnly} nih kak. Ditunggu kak, terima kasih!`;
+  }
+  return `Halo Kak Admin Terranova Store! Mau order ${productName} paket ${packageLabel} nih kak, ready kah? Ditunggu kak, terima kasih!`;
 }
 
 
@@ -365,17 +397,31 @@ function createProductCard(product, showCategoryTag = false) {
 
   card.className = `product-card reveal in-view ${accentClass}`;
 
-  // Baris tiap paket, setiap baris bisa diklik untuk membuka modal order dengan paket tsb terpilih
-  const packageRows = product.packages
-    .map((pkg, idx) => {
-      return `
-        <button type="button" class="package-row" data-pkg-index="${idx}" title="Order paket ${pkg.label}">
-          <span class="package-label">${pkg.label}</span>
-          <span class="package-price">${pkg.price}</span>
-        </button>
-      `;
-    })
-    .join("");
+  const hasPkg = (product.hasPackages === true || (Array.isArray(product.packages) && product.packages.length > 0 && product.packages.some(pkg => pkg.label && pkg.label.trim())));
+
+  let packageOrPriceHtml = "";
+  if (hasPkg && Array.isArray(product.packages) && product.packages.length > 0) {
+    const packageRows = product.packages
+      .map((pkg, idx) => {
+        return `
+          <button type="button" class="package-row" data-pkg-index="${idx}" title="Order paket ${pkg.label}">
+            <span class="package-label">${pkg.label}</span>
+            <span class="package-price">${pkg.price}</span>
+          </button>
+        `;
+      })
+      .join("");
+    packageOrPriceHtml = `<div class="package-list">${packageRows}</div>`;
+  } else {
+    const rawPrice = product.price || (product.packages && product.packages[0] ? product.packages[0].price : "Rp XX.XXX");
+    const pInfo = parsePriceInfo(rawPrice);
+    packageOrPriceHtml = `
+      <div class="product-single-price-box">
+        <span class="single-price-label">Harga</span>
+        <span class="single-price-val">${pInfo.display}</span>
+      </div>
+    `;
+  }
 
   const badgeHtml = product.badge
     ? `<span class="product-badge">${product.badge}</span>`
@@ -393,7 +439,7 @@ function createProductCard(product, showCategoryTag = false) {
     <span class="product-icon">${iconHtml}</span>
     <h3 class="product-name">${product.name}</h3>
     <p class="product-desc">${product.description}</p>
-    <div class="package-list">${packageRows}</div>
+    ${packageOrPriceHtml}
     <button type="button" class="btn-order">
       ORDER ${product.name.toUpperCase()}
     </button>
@@ -546,7 +592,7 @@ function initRealtimeSearch() {
       }
       if (requestBtn) {
         requestBtn.href = buildWhatsAppLink(
-          `Halo Terranova Store, saya mencari produk ${rawQuery.trim() || activeCategory}, apakah tersedia?`
+          `Halo Kak Admin Terranova Store! Mau tanya untuk produk ${rawQuery.trim() || activeCategory} ready kah? Mau order nih kak, terima kasih!`
         );
       }
     } else {
@@ -642,12 +688,15 @@ function renderPricelist() {
 
     const rows = items
       .map((product) => {
-        // Ambil harga termurah dari setiap produk untuk ringkasan pricelist
-        const cheapest = product.packages[0];
+        const hasPkg = (product.hasPackages === true || (Array.isArray(product.packages) && product.packages.length > 0 && product.packages.some(pkg => pkg.label && pkg.label.trim())));
+        const rawPrice = hasPkg && Array.isArray(product.packages) && product.packages[0]
+          ? product.packages[0].price
+          : (product.price || (product.packages && product.packages[0] ? product.packages[0].price : "Rp XX.XXX"));
+        const pInfo = parsePriceInfo(rawPrice);
         return `
           <div class="pricelist-item pricelist-clickable" data-product-name="${product.name}" tabindex="0" role="button" title="Pesan ${product.name}">
             <span class="pricelist-item-name">${product.name}</span>
-            <span class="pricelist-item-price">${cheapest.price} <span class="pricelist-arrow">→</span></span>
+            <span class="pricelist-item-price">${pInfo.display} <span class="pricelist-arrow">→</span></span>
           </div>
         `;
       })
@@ -698,7 +747,7 @@ function renderPricelist() {
 
 function setupContactLinks() {
   const waLink = buildWhatsAppLink(
-    "Halo Terranova Store, saya ingin bertanya-tanya tentang produk."
+    "Halo Kak Admin Terranova Store! Mau tanya-tanya produk dan pricelist terbarunya ya kak, terima kasih!"
   );
 
   // Kontak singkat (setelah hero, hanya ada di index.html)
@@ -1261,8 +1310,8 @@ function initOrderModal() {
       <div class="order-modal-body">
         <p id="orderModalDesc" class="order-modal-desc"></p>
 
-        <div class="order-modal-section">
-          <label class="order-modal-label">Pilih Paket / Durasi:</label>
+        <div class="order-modal-section" id="orderModalPackagesSection">
+          <label class="order-modal-label">Pilih Paket / Varian:</label>
           <div id="orderModalPackages" class="order-packages-grid"></div>
         </div>
 
@@ -1281,7 +1330,7 @@ function initOrderModal() {
         </div>
 
         <div class="order-summary-box">
-          <div class="order-summary-row">
+          <div class="order-summary-row" id="orderSummaryPkgRow">
             <span class="summary-label">Paket Dipilih:</span>
             <span id="orderSummaryPkg" class="summary-value">-</span>
           </div>
@@ -1352,10 +1401,11 @@ function openOrderModal(product, initialPackageIndex = 0) {
   initOrderModal();
 
   activeOrderProduct = product;
-  activeOrderPackageIndex = Math.min(
-    Math.max(0, initialPackageIndex),
-    product.packages.length - 1
-  );
+  const hasPkg = (product.hasPackages === true || (Array.isArray(product.packages) && product.packages.length > 0 && product.packages.some(pkg => pkg.label && pkg.label.trim())));
+
+  activeOrderPackageIndex = hasPkg && Array.isArray(product.packages) && product.packages.length > 0
+    ? Math.min(Math.max(0, initialPackageIndex), product.packages.length - 1)
+    : 0;
 
   const backdrop = document.getElementById("orderModalBackdrop");
   if (!backdrop) return;
@@ -1391,29 +1441,41 @@ function openOrderModal(product, initialPackageIndex = 0) {
   const summaryPay = document.getElementById("orderSummaryPay");
   if (summaryPay) summaryPay.textContent = activePaymentMethod;
 
-  // Render opsi paket produk
+  // Render opsi paket produk jika ada paket
+  const packagesSection = document.getElementById("orderModalPackagesSection");
   const packagesContainer = document.getElementById("orderModalPackages");
-  if (packagesContainer) {
-    packagesContainer.innerHTML = "";
-    product.packages.forEach((pkg, idx) => {
-      const pkgBtn = document.createElement("button");
-      pkgBtn.type = "button";
-      pkgBtn.className = `order-package-card ${idx === activeOrderPackageIndex ? "active" : ""}`;
-      pkgBtn.innerHTML = `
-        <span class="order-package-label">${pkg.label}</span>
-        <span class="order-package-price">${pkg.price}</span>
-      `;
-      pkgBtn.addEventListener("click", () => {
-        packagesContainer
-          .querySelectorAll(".order-package-card")
-          .forEach((c) => c.classList.remove("active"));
-        pkgBtn.classList.add("active");
-        activeOrderPackageIndex = idx;
-        updateOrderModalSummary();
-        updateOrderModalWhatsAppLink();
+  const summaryPkgRow = document.getElementById("orderSummaryPkgRow");
+
+  if (hasPkg && Array.isArray(product.packages) && product.packages.length > 0) {
+    if (packagesSection) packagesSection.style.display = "block";
+    if (summaryPkgRow) summaryPkgRow.style.display = "flex";
+    if (packagesContainer) {
+      packagesContainer.innerHTML = "";
+      product.packages.forEach((pkg, idx) => {
+        const pkgBtn = document.createElement("button");
+        pkgBtn.type = "button";
+        pkgBtn.className = `order-package-card ${idx === activeOrderPackageIndex ? "active" : ""}`;
+        pkgBtn.innerHTML = `
+          <span class="order-package-label">${pkg.label}</span>
+          <span class="order-package-price">${pkg.price}</span>
+        `;
+        pkgBtn.addEventListener("click", () => {
+          packagesContainer
+            .querySelectorAll(".order-package-card")
+            .forEach((c) => c.classList.remove("active"));
+          pkgBtn.classList.add("active");
+          activeOrderPackageIndex = idx;
+          updateOrderModalSummary();
+          updateOrderModalWhatsAppLink();
+        });
+        packagesContainer.appendChild(pkgBtn);
       });
-      packagesContainer.appendChild(pkgBtn);
-    });
+    }
+  } else {
+    // Sembunyikan pilihan paket jika produk tidak memiliki paket
+    if (packagesSection) packagesSection.style.display = "none";
+    if (summaryPkgRow) summaryPkgRow.style.display = "none";
+    if (packagesContainer) packagesContainer.innerHTML = "";
   }
 
   updateOrderModalSummary();
@@ -1426,14 +1488,28 @@ function openOrderModal(product, initialPackageIndex = 0) {
 
 function updateOrderModalSummary() {
   if (!activeOrderProduct) return;
-  const currentPkg =
-    activeOrderProduct.packages[activeOrderPackageIndex] ||
-    activeOrderProduct.packages[0];
+  const hasPkg = (activeOrderProduct.hasPackages === true || (Array.isArray(activeOrderProduct.packages) && activeOrderProduct.packages.length > 0 && activeOrderProduct.packages.some(pkg => pkg.label && pkg.label.trim())));
+
+  const summaryPkgRow = document.getElementById("orderSummaryPkgRow");
   const summaryPkg = document.getElementById("orderSummaryPkg");
   const summaryPrice = document.getElementById("orderSummaryPrice");
 
-  if (summaryPkg && currentPkg) summaryPkg.textContent = currentPkg.label;
-  if (summaryPrice && currentPkg) summaryPrice.textContent = currentPkg.price;
+  if (hasPkg && Array.isArray(activeOrderProduct.packages) && activeOrderProduct.packages.length > 0) {
+    if (summaryPkgRow) summaryPkgRow.style.display = "flex";
+    const currentPkg = activeOrderProduct.packages[activeOrderPackageIndex] || activeOrderProduct.packages[0];
+    if (summaryPkg && currentPkg) summaryPkg.textContent = currentPkg.label;
+    if (summaryPrice && currentPkg) {
+      const pInfo = parsePriceInfo(currentPkg.price);
+      summaryPrice.textContent = pInfo.display;
+    }
+  } else {
+    if (summaryPkgRow) summaryPkgRow.style.display = "none";
+    if (summaryPrice) {
+      const rawPrice = activeOrderProduct.price || (activeOrderProduct.packages && activeOrderProduct.packages[0] ? activeOrderProduct.packages[0].price : "Rp XX.XXX");
+      const pInfo = parsePriceInfo(rawPrice);
+      summaryPrice.textContent = pInfo.display;
+    }
+  }
 }
 
 function updateOrderModalWhatsAppLink() {
@@ -1441,27 +1517,38 @@ function updateOrderModalWhatsAppLink() {
   const submitBtn = document.getElementById("orderModalSubmit");
   if (!submitBtn) return;
 
-  const currentPkg =
-    activeOrderProduct.packages[activeOrderPackageIndex] ||
-    activeOrderProduct.packages[0];
+  const hasPkg = (activeOrderProduct.hasPackages === true || (Array.isArray(activeOrderProduct.packages) && activeOrderProduct.packages.length > 0 && activeOrderProduct.packages.some(pkg => pkg.label && pkg.label.trim())));
+  const currentPkg = hasPkg && Array.isArray(activeOrderProduct.packages) && activeOrderProduct.packages.length > 0
+    ? (activeOrderProduct.packages[activeOrderPackageIndex] || activeOrderProduct.packages[0])
+    : null;
+  const rawPrice = currentPkg
+    ? currentPkg.price
+    : (activeOrderProduct.price || (activeOrderProduct.packages && activeOrderProduct.packages[0] ? activeOrderProduct.packages[0].price : ""));
+  const priceInfo = parsePriceInfo(rawPrice);
+
   const notesInput = document.getElementById("orderModalNotes");
   const notes = notesInput ? notesInput.value.trim() : "";
 
-  let msg = `Halo Admin Terranova Store! Mau order nih kak:\n\n`;
-  msg += `*Detail Pesanan:*\n`;
-  msg += `- Produk: *${activeOrderProduct.name}*\n`;
-  if (currentPkg) {
-    msg += `- Paket: *${currentPkg.label}* (${currentPkg.price})\n`;
+  let msg = `Halo Kak Admin Terranova Store! Mau order nih kak:\n\n`;
+  msg += `Detail Pesanan:\n`;
+  msg += `Produk: ${activeOrderProduct.name}\n`;
+  if (hasPkg && currentPkg && currentPkg.label && currentPkg.label.trim()) {
+    msg += `Paket: ${currentPkg.label}\n`;
   }
-  msg += `- Pembayaran: *${activePaymentMethod}*\n`;
+  if (priceInfo.hasRealPrice) {
+    msg += `Nominal Harga: ${priceInfo.nominalOnly}\n`;
+  } else {
+    msg += `Nominal Harga: ${priceInfo.display}\n`;
+  }
+  msg += `Metode Pembayaran: ${activePaymentMethod}\n`;
   if (notes.length > 0) {
-    msg += `- Catatan: ${notes}\n`;
+    msg += `Catatan: ${notes}\n`;
   }
 
   if (activePaymentMethod.toUpperCase().includes("QRIS")) {
-    msg += `\nBoleh minta barcode QRIS-nya ya kak? Siap langsung transfer sekarang. Ditunggu konfirmasinya, makasih banyak!`;
+    msg += `\nBoleh minta barcode QRIS-nya ya kak? Ditunggu kak, terima kasih!`;
   } else {
-    msg += `\nBoleh info detail pembayarannya kak? Siap langsung transfer sekarang. Ditunggu konfirmasinya, makasih banyak!`;
+    msg += `\nBoleh minta info detail pembayarannya ya kak? Ditunggu kak, terima kasih!`;
   }
 
   submitBtn.href = buildWhatsAppLink(msg);
